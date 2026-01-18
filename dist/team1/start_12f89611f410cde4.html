@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Red Dragons - Treasure Hunt</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <span class="team-name">Red Dragons</span>
+            <span class="progress">Start</span>
+        </header>
+
+        <main class="task-content welcome">
+            <h1>Welcome, Red Dragons!</h1>
+<p>You are the <strong>MAIN TEAM</strong> - the leaders of this treasure hunt!</p>
+<p>Your mission: Complete your tasks AND collect secret letters from all other teams to unlock the Grand Finale!</p>
+<p>Work together, solve the clues, and lead everyone to victory!</p>
+<p>Good luck, dragons!</p>
+        </main>
+
+        <a href="s1_f45fcbe42b0c05e1.html" class="start-btn" onclick="trackStart()">Start Game</a>
+    </div>
+
+    <script>
+        window.TEAM_CONFIG = {
+            teamId: "team1",
+            teamName: "Red Dragons",
+            step: 0,
+            taskId: "start"
+        };
+    </script>
+    <script src="../js/game.js"></script>
+    <script>
+        function trackStart() {
+            trackEvent('game_start');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Red Dragons - Step 4/6</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <span class="team-name">Red Dragons</span>
+            <span class="progress">Step 4/6</span>
+        </header>
+
+        <main class="task-content">
+            <h1>The Laundry Room Quest</h1>
+<p>Find your way to the <strong>laundry room</strong>.</p>
+<p>Check inside the machine that makes clothes dry and warm. There's an envelope waiting for you!</p>
+<p><strong>Hint:</strong> Make sure it's not running first!</p>
+        </main>
+
+        
+        <form id="code-form" class="code-form">
+            <input
+                type="text"
+                id="code-input"
+                class="code-input"
+                placeholder="Enter code"
+                autocomplete="off"
+                autofocus
+            >
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+        <p id="error-message" class="error-message hidden">Incorrect code, try again!</p>
+    
+    </div>
+    
+    <script>
+        window.TEAM_CONFIG = {
+            teamId: "team1",
+            teamName: "Red Dragons",
+            step: 4,
+            taskId: "task7"
+        };
+    </script>
+    <script>
+        const TASK_CONFIG = {
+            correctHashSHA256: "6ebb9e233e4dec9dcce1716456fbb046ff3d5669affd1a55602d5c4fbf5f7082",
+            nextTaskFile: "s5_58d24a409e4d5f8d.html"
+        };
+    </script>
+    <script src="../js/game.js"></script>
+    
+</body>
+</html>

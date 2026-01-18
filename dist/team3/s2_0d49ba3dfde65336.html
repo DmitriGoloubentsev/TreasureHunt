@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Green Explorers - Step 2/5</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <span class="team-name">Green Explorers</span>
+            <span class="progress">Step 2/5</span>
+        </header>
+
+        <main class="task-content">
+            <h1>The Garden Gnome</h1>
+<p>Search for the friendly garden gnome near the <strong>front porch</strong>.</p>
+<p>Look underneath him carefully - you'll find a small envelope with your next code!</p>
+<p><strong>Hint:</strong> He's the one wearing a red pointy hat.</p>
+        </main>
+
+        
+        <form id="code-form" class="code-form">
+            <input
+                type="text"
+                id="code-input"
+                class="code-input"
+                placeholder="Enter code"
+                autocomplete="off"
+                autofocus
+            >
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+        <p id="error-message" class="error-message hidden">Incorrect code, try again!</p>
+    
+    </div>
+    
+    <script>
+        window.TEAM_CONFIG = {
+            teamId: "team3",
+            teamName: "Green Explorers",
+            step: 2,
+            taskId: "task1"
+        };
+    </script>
+    <script>
+        const TASK_CONFIG = {
+            correctHashSHA256: "30ccc00869dccdd7d068264c651f3d2bf33f13947aef2d7a94d32d3b7f0ce557",
+            nextTaskFile: "s3_f45fcbe42b0c05e1.html"
+        };
+    </script>
+    <script src="../js/game.js"></script>
+    
+</body>
+</html>

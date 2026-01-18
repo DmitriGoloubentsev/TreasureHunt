@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Yellow Stars - Treasure Hunt</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <span class="team-name">Yellow Stars</span>
+            <span class="progress">Start</span>
+        </header>
+
+        <main class="task-content welcome">
+            <h1>Welcome, Yellow Stars!</h1>
+<p>Time to shine bright and find that treasure!</p>
+<p>Complete all your tasks to receive a <strong>secret letter</strong>.</p>
+<p>Then find Team 1 (Red Dragons) and give them your letter!</p>
+<p>Sparkle on, stars!</p>
+        </main>
+
+        <a href="s1_4ad8d5f8c730ab91.html" class="start-btn" onclick="trackStart()">Start Game</a>
+    </div>
+
+    <script>
+        window.TEAM_CONFIG = {
+            teamId: "team4",
+            teamName: "Yellow Stars",
+            step: 0,
+            taskId: "start"
+        };
+    </script>
+    <script src="../js/game.js"></script>
+    <script>
+        function trackStart() {
+            trackEvent('game_start');
+        }
+    </script>
+</body>
+</html>

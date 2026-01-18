@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Purple Ninjas - Treasure Hunt</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <span class="team-name">Purple Ninjas</span>
+            <span class="progress">Start</span>
+        </header>
+
+        <main class="task-content welcome">
+            <h1>Welcome, Purple Ninjas!</h1>
+<p>Move silently, strike swiftly, find the treasure!</p>
+<p>Complete all your tasks to receive a <strong>secret letter</strong>.</p>
+<p>Then find Team 1 (Red Dragons) and give them your letter!</p>
+<p>Stay sharp, ninjas!</p>
+        </main>
+
+        <a href="s1_195acdb5128a84f4.html" class="start-btn" onclick="trackStart()">Start Game</a>
+    </div>
+
+    <script>
+        window.TEAM_CONFIG = {
+            teamId: "team5",
+            teamName: "Purple Ninjas",
+            step: 0,
+            taskId: "start"
+        };
+    </script>
+    <script src="../js/game.js"></script>
+    <script>
+        function trackStart() {
+            trackEvent('game_start');
+        }
+    </script>
+</body>
+</html>

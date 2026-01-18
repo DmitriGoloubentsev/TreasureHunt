@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Blue Wizards - Step 4/5</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <span class="team-name">Blue Wizards</span>
+            <span class="progress">Step 4/5</span>
+        </header>
+
+        <main class="task-content">
+            <h1>The Bedroom Puzzle</h1>
+<p>Go to the <strong>master bedroom</strong>.</p>
+<p>Your clue is hiding under something soft that you rest your head on at night.</p>
+<p><strong>Hint:</strong> Sweet dreams are made of this!</p>
+        </main>
+
+        
+        <form id="code-form" class="code-form">
+            <input
+                type="text"
+                id="code-input"
+                class="code-input"
+                placeholder="Enter code"
+                autocomplete="off"
+                autofocus
+            >
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+        <p id="error-message" class="error-message hidden">Incorrect code, try again!</p>
+    
+    </div>
+    
+    <script>
+        window.TEAM_CONFIG = {
+            teamId: "team2",
+            teamName: "Blue Wizards",
+            step: 4,
+            taskId: "task8"
+        };
+    </script>
+    <script>
+        const TASK_CONFIG = {
+            correctHashSHA256: "546a0f6b6e9a2b9b097df1c2cbf682ad91cf9bd2184333db23c7bc2618a9e970",
+            nextTaskFile: "s5_195acdb5128a84f4.html"
+        };
+    </script>
+    <script src="../js/game.js"></script>
+    
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Red Dragons - Step 3/6</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <span class="team-name">Red Dragons</span>
+            <span class="progress">Step 3/6</span>
+        </header>
+
+        <main class="task-content">
+            <h1>The Garage Secret</h1>
+<p>Enter the <strong>garage</strong> (ask an adult to help if needed).</p>
+<p>Look for the red toolbox. Your clue is magnetically attached somewhere on it.</p>
+<p><strong>Hint:</strong> Check all sides, including the back!</p>
+        </main>
+
+        
+        <form id="code-form" class="code-form">
+            <input
+                type="text"
+                id="code-input"
+                class="code-input"
+                placeholder="Enter code"
+                autocomplete="off"
+                autofocus
+            >
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+        <p id="error-message" class="error-message hidden">Incorrect code, try again!</p>
+    
+    </div>
+    
+    <script>
+        window.TEAM_CONFIG = {
+            teamId: "team1",
+            teamName: "Red Dragons",
+            step: 3,
+            taskId: "task5"
+        };
+    </script>
+    <script>
+        const TASK_CONFIG = {
+            correctHashSHA256: "8fe2321594e69a166fe2dcabc0515615866a31ea0a7a1c5fee791ecc999b5e41",
+            nextTaskFile: "s4_16a8ff3cbdde60fc.html"
+        };
+    </script>
+    <script src="../js/game.js"></script>
+    
+</body>
+</html>

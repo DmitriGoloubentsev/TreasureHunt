@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Red Dragons - Step 5/6</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <span class="team-name">Red Dragons</span>
+            <span class="progress">Step 5/6</span>
+        </header>
+
+        <main class="task-content">
+            <h1>The Final Challenge</h1>
+<p>You're almost there, Red Dragons!</p>
+<p>To unlock the <strong>Grand Finale</strong>, you need help from ALL the other teams!</p>
+<h2>Your Mission:</h2>
+<p>1. Find <strong>Blue Wizards</strong> (Team 2) - get their letter<br>2. Find <strong>Green Explorers</strong> (Team 3) - get their letter<br>3. Find <strong>Yellow Stars</strong> (Team 4) - get their letter<br>4. Find <strong>Purple Ninjas</strong> (Team 5) - get their letter</p>
+<h2>Combine the Letters</h2>
+<p>Put all 4 letters together in team order (2, 3, 4, 5) to form the final code!</p>
+<p><strong>Hint:</strong> It's something you eat at a birthday party!</p>
+        </main>
+
+        
+        <form id="code-form" class="code-form">
+            <input
+                type="text"
+                id="code-input"
+                class="code-input"
+                placeholder="Enter code"
+                autocomplete="off"
+                autofocus
+            >
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+        <p id="error-message" class="error-message hidden">Incorrect code, try again!</p>
+    
+    </div>
+    
+    <script>
+        window.TEAM_CONFIG = {
+            teamId: "team1",
+            teamName: "Red Dragons",
+            step: 5,
+            taskId: "collect"
+        };
+    </script>
+    <script>
+        const TASK_CONFIG = {
+            correctHashSHA256: "8c38b376fdf45f4a7ca56a6b1062add530646a45ec959d059b1777edf00a37a5",
+            nextTaskFile: "s6_f791e215081d6dfc.html"
+        };
+    </script>
+    <script src="../js/game.js"></script>
+    
+</body>
+</html>

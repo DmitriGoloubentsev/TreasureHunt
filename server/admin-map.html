@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treasure Hunt - Live Map</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+        #map { height: 100vh; width: 100%; }
+
+        .controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            max-width: 300px;
+        }
+
+        .controls h2 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .team-legend {
+            margin-bottom: 10px;
+        }
+
+        .team-item {
+            display: flex;
+            align-items: center;
+            padding: 5px 0;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .team-item:hover {
+            background: #f5f5f5;
+        }
+
+        .team-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 8px;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .team-status {
+            margin-left: auto;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background: #e0e0e0;
+        }
+
+        .team-status.active {
+            background: #4caf50;
+            color: white;
+        }
+
+        .team-status.completed {
+            background: #2196f3;
+            color: white;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-right: 5px;
+            margin-top: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover { background: #5a6fd6; }
+        .btn.secondary { background: #888; }
+        .btn.green { background: #43a047; }
+
+        .status-bar {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            font-size: 0.85rem;
+        }
+
+        .status-bar .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4caf50;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .leaflet-popup-content h3 {
+            margin: 0 0 8px 0;
+            font-size: 1rem;
+        }
+
+        .leaflet-popup-content p {
+            margin: 3px 0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <div class="controls">
+        <h2>Team Tracker</h2>
+        <div class="team-legend" id="team-legend">
+            <p style="color: #888; font-size: 0.85rem;">Waiting for teams...</p>
+        </div>
+        <button class="btn" onclick="fitAllMarkers()">Show All</button>
+        <button class="btn secondary" onclick="toggleTracks()">Toggle Tracks</button>
+        <a href="/admin" class="btn green">Dashboard</a>
+    </div>
+
+    <div class="status-bar">
+        <span class="dot"></span>
+        <span id="status">Connecting...</span>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // Team colors
+        const TEAM_COLORS = {
+            'team1': '#e53935', // Red Dragons
+            'team2': '#1e88e5', // Blue Wizards
+            'team3': '#43a047', // Green Explorers
+            'team4': '#fdd835', // Yellow Stars
+            'team5': '#8e24aa', // Purple Ninjas
+        };
+
+        const DEFAULT_COLOR = '#757575';
+
+        let map;
+        let markers = {};
+        let tracks = {};
+        let teamData = {};
+        let showTracks = true;
+        let markersGroup;
+        let tracksGroup;
+
+        // Initialize map
+        function initMap() {
+            // Default center (will be updated when we get team locations)
+            const defaultCenter = [48.8566, 2.3522]; // Paris
+
+            map = L.map('map').setView(defaultCenter, 15);
+
+            // OpenStreetMap tiles (free, no API key needed)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            markersGroup = L.featureGroup().addTo(map);
+            tracksGroup = L.featureGroup().addTo(map);
+
+            // Connect to event stream
+            connectToStream();
+        }
+
+        function connectToStream() {
+            const eventSource = new EventSource('/api/events/stream');
+
+            eventSource.onopen = () => {
+                document.getElementById('status').textContent = 'Live - tracking ' + Object.keys(teamData).length + ' teams';
+            };
+
+            eventSource.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+
+                if (data.type === 'init' || data.type === 'new_event') {
+                    updateTeams(data.teamStatus || {});
+                } else if (data.type === 'reset') {
+                    clearAll();
+                }
+
+                document.getElementById('status').textContent = 'Live - tracking ' + Object.keys(teamData).length + ' teams';
+            };
+
+            eventSource.onerror = () => {
+                document.getElementById('status').textContent = 'Disconnected - retrying...';
+                document.querySelector('.dot').style.background = '#e74c3c';
+            };
+        }
+
+        function updateTeams(newTeamData) {
+            for (const [teamId, team] of Object.entries(newTeamData)) {
+                teamData[teamId] = team;
+
+                if (team.location) {
+                    updateMarker(teamId, team);
+                }
+            }
+
+            updateLegend();
+        }
+
+        function createCircleIcon(color) {
+            return L.divIcon({
+                html: `<div style="
+                    background: ${color};
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    border: 3px solid white;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                "></div>`,
+                className: 'custom-marker',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+                popupAnchor: [0, -12]
+            });
+        }
+
+        function updateMarker(teamId, team) {
+            const position = [team.location.lat, team.location.lng];
+            const color = TEAM_COLORS[teamId] || DEFAULT_COLOR;
+
+            if (!markers[teamId]) {
+                // Create new marker
+                markers[teamId] = L.marker(position, {
+                    icon: createCircleIcon(color)
+                }).addTo(markersGroup);
+
+                // Bind popup
+                markers[teamId].bindPopup(createPopupContent(team));
+
+                // Initialize track
+                tracks[teamId] = {
+                    path: [position],
+                    polyline: L.polyline([position], {
+                        color: color,
+                        weight: 4,
+                        opacity: 0.7
+                    }).addTo(tracksGroup)
+                };
+            } else {
+                // Update existing marker
+                markers[teamId].setLatLng(position);
+                markers[teamId].setPopupContent(createPopupContent(team));
+
+                // Update track
+                tracks[teamId].path.push(position);
+                tracks[teamId].polyline.setLatLngs(tracks[teamId].path);
+            }
+        }
+
+        function createPopupContent(team) {
+            const lastAttempt = team.attempts && team.attempts.length > 0
+                ? team.attempts[team.attempts.length - 1]
+                : null;
+
+            return `
+                <h3>${team.teamName}</h3>
+                <p><strong>Step:</strong> ${team.currentStep || 0}</p>
+                <p><strong>Task:</strong> ${team.currentTask || 'N/A'}</p>
+                <p><strong>Last seen:</strong> ${team.lastSeen ? new Date(team.lastSeen).toLocaleTimeString() : 'N/A'}</p>
+                ${lastAttempt ? `<p><strong>Last code:</strong> ${lastAttempt.code} ${lastAttempt.success ? '✓' : '✗'}</p>` : ''}
+                <p><strong>Status:</strong> ${team.completed ? 'Completed!' : 'Playing'}</p>
+            `;
+        }
+
+        function updateLegend() {
+            const legend = document.getElementById('team-legend');
+            const teams = Object.entries(teamData);
+
+            if (teams.length === 0) {
+                legend.innerHTML = '<p style="color: #888; font-size: 0.85rem;">Waiting for teams...</p>';
+                return;
+            }
+
+            legend.innerHTML = teams.map(([teamId, team]) => {
+                const color = TEAM_COLORS[teamId] || DEFAULT_COLOR;
+                const hasLocation = !!team.location;
+
+                let statusClass = team.completed ? 'completed' : 'active';
+                let statusText = team.completed ? 'Done' : `Step ${team.currentStep || 0}`;
+                let gpsIndicator = hasLocation ? '' : ' <span style="color:#e74c3c;font-size:0.7rem;">NO GPS</span>';
+
+                return `
+                    <div class="team-item" onclick="focusTeam('${teamId}')" style="${hasLocation ? '' : 'opacity: 0.7;'}">
+                        <div class="team-color" style="background: ${color};${hasLocation ? '' : 'border-style: dashed;'}"></div>
+                        <span>${team.teamName}${gpsIndicator}</span>
+                        <span class="team-status ${statusClass}">${statusText}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function focusTeam(teamId) {
+            if (markers[teamId]) {
+                map.setView(markers[teamId].getLatLng(), 17);
+                markers[teamId].openPopup();
+            }
+        }
+
+        function fitAllMarkers() {
+            if (markersGroup.getLayers().length > 0) {
+                map.fitBounds(markersGroup.getBounds(), { padding: [50, 50] });
+            }
+        }
+
+        function toggleTracks() {
+            showTracks = !showTracks;
+
+            if (showTracks) {
+                tracksGroup.addTo(map);
+            } else {
+                tracksGroup.remove();
+            }
+        }
+
+        function clearAll() {
+            markersGroup.clearLayers();
+            tracksGroup.clearLayers();
+            markers = {};
+            tracks = {};
+            teamData = {};
+            updateLegend();
+        }
+
+        // Initialize on load
+        initMap();
+    </script>
+</body>
+</html>

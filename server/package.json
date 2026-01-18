@@ -1,0 +1,13 @@
+{
+  "name": "treasure-hunt-monitor",
+  "version": "1.0.0",
+  "description": "Optional backend for monitoring treasure hunt progress",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treasure Hunt - Admin Monitor</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { text-align: center; margin-bottom: 20px; color: #667eea; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto; }
+        .team-card {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #0f3460;
+        }
+        .team-card.completed { border-color: #4caf50; }
+        .team-card h2 { color: #667eea; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .team-card .status { font-size: 0.8rem; padding: 4px 8px; border-radius: 12px; background: #0f3460; }
+        .team-card.completed .status { background: #4caf50; }
+        .team-card .step { font-size: 2rem; font-weight: bold; color: #667eea; margin: 10px 0; }
+        .team-card .location { font-size: 0.85rem; color: #888; margin: 10px 0; }
+        .team-card .location a { color: #667eea; }
+        .team-card .attempts { margin-top: 15px; max-height: 150px; overflow-y: auto; }
+        .team-card .attempt { font-size: 0.8rem; padding: 5px; border-radius: 4px; margin-bottom: 4px; font-family: monospace; }
+        .team-card .attempt.success { background: rgba(76, 175, 80, 0.2); color: #81c784; }
+        .team-card .attempt.fail { background: rgba(244, 67, 54, 0.2); color: #e57373; }
+        .events-log {
+            max-width: 1400px;
+            margin: 30px auto 0;
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .events-log h2 { color: #667eea; margin-bottom: 15px; }
+        .events-log .log { max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; }
+        .events-log .log-entry { padding: 5px; border-bottom: 1px solid #0f3460; }
+        .events-log .log-entry .time { color: #888; }
+        .events-log .log-entry .team { color: #667eea; }
+        .toolbar { max-width: 1400px; margin: 0 auto 20px; display: flex; gap: 10px; }
+        .toolbar button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .toolbar button:hover { background: #5a6fd6; }
+        .toolbar button.danger { background: #e74c3c; }
+        .toolbar .status-indicator {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toolbar .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .no-teams { text-align: center; color: #888; padding: 40px; }
+    </style>
+</head>
+<body>
+    <h1>Treasure Hunt Monitor</h1>
+
+    <div class="toolbar">
+        <button onclick="location.reload()">Refresh</button>
+        <a href="/admin/map" style="padding: 10px 20px; background: #43a047; color: white; border: none; border-radius: 6px; text-decoration: none; font-size: inherit;">Live Map</a>
+        <button class="danger" onclick="resetData()">Reset All Data</button>
+        <div class="status-indicator">
+            <span class="dot"></span>
+            <span>Live</span>
+        </div>
+    </div>
+
+    <div class="dashboard" id="dashboard">
+        <div class="no-teams">Waiting for teams to start...</div>
+    </div>
+
+    <div class="events-log">
+        <h2>Event Log</h2>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        let teamStatus = {};
+        let events = [];
+
+        function formatTime(iso) {
+            return new Date(iso).toLocaleTimeString();
+        }
+
+        function renderTeams() {
+            const dashboard = document.getElementById('dashboard');
+            const teams = Object.values(teamStatus);
+
+            if (teams.length === 0) {
+                dashboard.innerHTML = '<div class="no-teams">Waiting for teams to start...</div>';
+                return;
+            }
+
+            dashboard.innerHTML = teams.map(team => `
+                <div class="team-card ${team.completed ? 'completed' : ''}">
+                    <h2>
+                        ${team.teamName}
+                        <span class="status">${team.completed ? 'FINISHED' : 'Playing'}</span>
+                    </h2>
+                    <div class="step">Step ${team.currentStep || 0}</div>
+                    ${team.currentTask ? `<div>Current: ${team.currentTask}</div>` : ''}
+                    ${team.location ? `
+                        <div class="location">
+                            GPS: ${team.location.lat.toFixed(5)}, ${team.location.lng.toFixed(5)}
+                            <a href="https://maps.google.com/?q=${team.location.lat},${team.location.lng}" target="_blank">[Map]</a>
+                        </div>
+                    ` : '<div class="location">GPS: Not available</div>'}
+                    <div class="location">Last seen: ${team.lastSeen ? formatTime(team.lastSeen) : 'Never'}</div>
+                    <div class="attempts">
+                        ${(team.attempts || []).slice(-5).reverse().map(a => `
+                            <div class="attempt ${a.success ? 'success' : 'fail'}">
+                                ${formatTime(a.timestamp)} - "${a.code}" ${a.success ? '✓' : '✗'}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderLog() {
+            const log = document.getElementById('log');
+            log.innerHTML = events.slice(-50).reverse().map(e => `
+                <div class="log-entry">
+                    <span class="time">${formatTime(e.timestamp)}</span>
+                    <span class="team">[${e.teamName || e.teamId}]</span>
+                    ${e.type}${e.code ? ` "${e.code}"` : ''}${e.success !== undefined ? (e.success ? ' ✓' : ' ✗') : ''}
+                </div>
+            `).join('');
+        }
+
+        function resetData() {
+            if (confirm('Reset all tracking data?')) {
+                fetch('/api/reset').then(() => {
+                    teamStatus = {};
+                    events = [];
+                    renderTeams();
+                    renderLog();
+                });
+            }
+        }
+
+        // Connect to SSE stream
+        const eventSource = new EventSource('/api/events/stream');
+
+        eventSource.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+
+            if (data.type === 'init') {
+                events = data.events || [];
+                teamStatus = data.teamStatus || {};
+            } else if (data.type === 'new_event') {
+                events.push(data.event);
+                teamStatus = data.teamStatus;
+            } else if (data.type === 'reset') {
+                events = [];
+                teamStatus = {};
+            }
+
+            renderTeams();
+            renderLog();
+        };
+
+        eventSource.onerror = () => {
+            document.querySelector('.dot').style.background = '#e74c3c';
+        };
+    </script>
+</body>
+</html>

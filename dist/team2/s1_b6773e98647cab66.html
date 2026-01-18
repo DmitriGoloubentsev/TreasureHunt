@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Blue Wizards - Step 1/5</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <span class="team-name">Blue Wizards</span>
+            <span class="progress">Step 1/5</span>
+        </header>
+
+        <main class="task-content">
+            <h1>The Secret Bookshelf</h1>
+<p>Head to the living room and find the <strong>tallest bookshelf</strong>.</p>
+<p>Your next clue is hidden inside a book with a blue cover. Check the books on the third shelf from the top.</p>
+<p><strong>Hint:</strong> The book title starts with the letter "A".</p>
+        </main>
+
+        
+        <form id="code-form" class="code-form">
+            <input
+                type="text"
+                id="code-input"
+                class="code-input"
+                placeholder="Enter code"
+                autocomplete="off"
+                autofocus
+            >
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+        <p id="error-message" class="error-message hidden">Incorrect code, try again!</p>
+    
+    </div>
+    
+    <script>
+        window.TEAM_CONFIG = {
+            teamId: "team2",
+            teamName: "Blue Wizards",
+            step: 1,
+            taskId: "task2"
+        };
+    </script>
+    <script>
+        const TASK_CONFIG = {
+            correctHashSHA256: "450ee82e2c9c83bcbad3611abb2034efbab91de4cc23c90a991100b05306c530",
+            nextTaskFile: "s2_b6773e98647cab66.html"
+        };
+    </script>
+    <script src="../js/game.js"></script>
+    
+</body>
+</html>

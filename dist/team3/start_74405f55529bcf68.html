@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Green Explorers - Treasure Hunt</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <span class="team-name">Green Explorers</span>
+            <span class="progress">Start</span>
+        </header>
+
+        <main class="task-content welcome">
+            <h1>Welcome, Green Explorers!</h1>
+<p>Your expedition into the unknown starts here!</p>
+<p>Complete all your tasks to receive a <strong>secret letter</strong>.</p>
+<p>Then find Team 1 (Red Dragons) and give them your letter!</p>
+<p>Explore bravely, adventurers!</p>
+        </main>
+
+        <a href="s1_0d49ba3dfde65336.html" class="start-btn" onclick="trackStart()">Start Game</a>
+    </div>
+
+    <script>
+        window.TEAM_CONFIG = {
+            teamId: "team3",
+            teamName: "Green Explorers",
+            step: 0,
+            taskId: "start"
+        };
+    </script>
+    <script src="../js/game.js"></script>
+    <script>
+        function trackStart() {
+            trackEvent('game_start');
+        }
+    </script>
+</body>
+</html>

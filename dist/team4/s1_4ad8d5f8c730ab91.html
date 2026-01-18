@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Yellow Stars - Step 1/5</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <span class="team-name">Yellow Stars</span>
+            <span class="progress">Step 1/5</span>
+        </header>
+
+        <main class="task-content">
+            <h1>The Bathroom Clue</h1>
+<p>This one's a bit silly! Go to the <strong>downstairs bathroom</strong>.</p>
+<p>Your code is hidden behind something you look at every morning.</p>
+<p><strong>Hint:</strong> Mirror, mirror on the wall...</p>
+        </main>
+
+        
+        <form id="code-form" class="code-form">
+            <input
+                type="text"
+                id="code-input"
+                class="code-input"
+                placeholder="Enter code"
+                autocomplete="off"
+                autofocus
+            >
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+        <p id="error-message" class="error-message hidden">Incorrect code, try again!</p>
+    
+    </div>
+    
+    <script>
+        window.TEAM_CONFIG = {
+            teamId: "team4",
+            teamName: "Yellow Stars",
+            step: 1,
+            taskId: "task6"
+        };
+    </script>
+    <script>
+        const TASK_CONFIG = {
+            correctHashSHA256: "2da8db3b4c1a34b0718510c27dfa8b2f3e01f9b4a1aa01b9616126a23d6845d4",
+            nextTaskFile: "s2_4ad8d5f8c730ab91.html"
+        };
+    </script>
+    <script src="../js/game.js"></script>
+    
+</body>
+</html>

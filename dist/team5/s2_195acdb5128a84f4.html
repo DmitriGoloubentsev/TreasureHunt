@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Purple Ninjas - Step 2/5</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <span class="team-name">Purple Ninjas</span>
+            <span class="progress">Step 2/5</span>
+        </header>
+
+        <main class="task-content">
+            <h1>The Kitchen Mystery</h1>
+<p>Make your way to the <strong>kitchen</strong>.</p>
+<p>Your code is hidden somewhere cold... very cold. Check where we keep things fresh!</p>
+<p><strong>Hint:</strong> Don't look in the freezer - just the regular cold part.</p>
+        </main>
+
+        
+        <form id="code-form" class="code-form">
+            <input
+                type="text"
+                id="code-input"
+                class="code-input"
+                placeholder="Enter code"
+                autocomplete="off"
+                autofocus
+            >
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+        <p id="error-message" class="error-message hidden">Incorrect code, try again!</p>
+    
+    </div>
+    
+    <script>
+        window.TEAM_CONFIG = {
+            teamId: "team5",
+            teamName: "Purple Ninjas",
+            step: 2,
+            taskId: "task3"
+        };
+    </script>
+    <script>
+        const TASK_CONFIG = {
+            correctHashSHA256: "f50c3399b7f6d5c0a34b8ddda1bcbd35afc3387f0a6c6f6106dc8a36f6e53ea3",
+            nextTaskFile: "s3_4dc332274009c4d7.html"
+        };
+    </script>
+    <script src="../js/game.js"></script>
+    
+</body>
+</html>
