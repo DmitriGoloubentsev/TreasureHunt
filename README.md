@@ -13,13 +13,33 @@ A serverless treasure hunt game engine for parties, team building, or family eve
 
 ## Quick Start
 
-### 1. Fork this repository
+### 1. Create your private repository
 
-Click the **Fork** button at the top of this page.
+Forks are public, so create a private copy to keep your codes secret:
+
+```bash
+# Create a new private repo on GitHub first, then:
+git clone git@github.com:YOUR_USERNAME/YOUR_REPO.git
+cd YOUR_REPO
+
+# Add this repo as upstream to receive updates
+git remote add upstream git@github.com:DmitriGoloubentsev/TreasureHunt.git
+git fetch upstream
+git merge upstream/main
+
+git push -u origin main
+```
+
+**To pull future updates:**
+```bash
+git fetch upstream
+git rebase upstream/main
+git push
+```
 
 ### 2. Customize your game
 
-Edit the task and team files in your fork:
+Edit the task and team files:
 
 **Tasks** (`tasks/*.md`):
 ```markdown
