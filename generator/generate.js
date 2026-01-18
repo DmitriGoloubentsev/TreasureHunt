@@ -254,45 +254,26 @@ function generateStartPageHtml(options) {
 </html>`;
 }
 
-function generateAdminIndexHtml(teamStartUrls) {
-    const teamRows = teamStartUrls.map(t => `
-        <tr>
-            <td><strong>${t.name}</strong></td>
-            <td><code>${t.id}</code></td>
-            <td><a href="${t.url}" target="_blank">${t.url}</a></td>
-        </tr>
-    `).join('');
-
+function generateIndexHtml() {
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Treasure Hunt - Admin</title>
+    <title>Treasure Hunt</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container admin">
-        <h1>Treasure Hunt - Team Start URLs</h1>
-        <p class="warning">DO NOT share this page with players!</p>
+    <div class="container">
+        <header class="header">
+            <span class="team-name">Treasure Hunt</span>
+        </header>
 
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Team Name</th>
-                    <th>Team ID</th>
-                    <th>Start URL</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${teamRows}
-            </tbody>
-        </table>
-
-        <h2>Quick Links</h2>
-        <ul>
-            ${teamStartUrls.map(t => `<li><a href="${t.url}">${t.name}</a></li>`).join('\n            ')}
-        </ul>
+        <main class="task-content welcome">
+            <h1>Welcome!</h1>
+            <p>Ask your game organizer for your team's start link.</p>
+            <p>Good luck and have fun!</p>
+        </main>
     </div>
 </body>
 </html>`;
@@ -842,10 +823,10 @@ function generate() {
         }
     }
 
-    // Generate admin index
-    const adminHtml = generateAdminIndexHtml(teamStartUrls);
-    fs.writeFileSync(path.join(DIST_DIR, 'index.html'), adminHtml);
-    console.log('\nGenerated admin index.html');
+    // Generate public index page
+    const indexHtml = generateIndexHtml();
+    fs.writeFileSync(path.join(DIST_DIR, 'index.html'), indexHtml);
+    console.log('\nGenerated index.html');
 
     // Generate TESTING.md
     generateTestingDoc(teams, tasks, teamStartUrls);
