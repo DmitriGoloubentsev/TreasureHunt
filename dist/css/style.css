@@ -222,3 +222,149 @@ body {
 .start-btn:hover {
     background: #5a6fd6;
 }
+
+/* Timer styles */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.timer {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    font-weight: bold;
+    background: #f0f0f0;
+    color: #333;
+    padding: 5px 10px;
+    border-radius: 8px;
+    min-width: 60px;
+    text-align: center;
+}
+
+.timer-warning {
+    background: #fff3cd;
+    color: #856404;
+    animation: pulse 1s infinite;
+}
+
+.timer-expired {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Penalty display */
+.penalty-display {
+    background: #fff3cd;
+    color: #856404;
+    padding: 8px 15px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Timeout help section */
+.timeout-help {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px solid #dee2e6;
+}
+
+.timeout-message {
+    color: #dc3545;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.organizer-contacts {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.organizer-card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.organizer-card strong {
+    display: block;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.contact-links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.contact-link {
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.contact-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.contact-link.phone {
+    background: #28a745;
+    color: white;
+}
+
+.contact-link.whatsapp {
+    background: #25D366;
+    color: white;
+}
+
+.contact-link.telegram {
+    background: #0088cc;
+    color: white;
+}
+
+/* Hint button */
+.hint-btn {
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px 20px;
+    background: #ffc107;
+    color: #212529;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.hint-btn:hover:not(:disabled) {
+    background: #e0a800;
+}
+
+.hint-btn:disabled,
+.hint-btn.hint-used {
+    background: #6c757d;
+    color: white;
+    cursor: not-allowed;
+}

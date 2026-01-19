@@ -35,29 +35,52 @@ function parseMarkdownWithFrontmatter(content) {
     const frontmatterStr = match[1];
     const body = match[2].trim();
 
-    // Simple YAML parser for our use case
+    // Enhanced YAML parser supporting arrays of objects
     const frontmatter = {};
     const lines = frontmatterStr.split('\n');
     let currentKey = null;
     let currentArray = null;
+    let currentObject = null;
 
     for (const line of lines) {
+        // Top-level key with value
         const keyMatch = line.match(/^(\w+):\s*(.*)$/);
         if (keyMatch) {
             const [, key, value] = keyMatch;
             if (value === '') {
-                // Start of array or object
+                // Start of array
                 currentKey = key;
                 currentArray = [];
                 frontmatter[key] = currentArray;
+                currentObject = null;
             } else {
                 frontmatter[key] = value;
                 currentKey = null;
                 currentArray = null;
+                currentObject = null;
             }
-        } else if (currentArray !== null && line.match(/^\s+-\s+(.*)$/)) {
-            const itemMatch = line.match(/^\s+-\s+(.*)$/);
-            currentArray.push(itemMatch[1]);
+        } else if (currentArray !== null) {
+            // Array item start (- item or - key: value)
+            const arrayItemMatch = line.match(/^\s+-\s+(.*)$/);
+            if (arrayItemMatch) {
+                const itemValue = arrayItemMatch[1];
+                // Check if it's a key: value pair (start of object)
+                const kvMatch = itemValue.match(/^(\w+):\s*(.*)$/);
+                if (kvMatch) {
+                    currentObject = {};
+                    currentObject[kvMatch[1]] = kvMatch[2];
+                    currentArray.push(currentObject);
+                } else {
+                    currentArray.push(itemValue);
+                    currentObject = null;
+                }
+            } else if (currentObject !== null) {
+                // Nested key in object
+                const nestedKvMatch = line.match(/^\s+(\w+):\s*(.*)$/);
+                if (nestedKvMatch) {
+                    currentObject[nestedKvMatch[1]] = nestedKvMatch[2];
+                }
+            }
         }
     }
 
@@ -110,6 +133,7 @@ function loadTasks() {
         tasks[taskId] = {
             id: taskId,
             code: frontmatter.code || null,
+            timeout_minutes: frontmatter.timeout_minutes ? parseInt(frontmatter.timeout_minutes) : null,
             content: body,
             html: markdownToHtml(body)
         };
@@ -142,7 +166,10 @@ function loadTeams() {
 
 function loadConfig() {
     const defaults = {
-        admin_password: 'treasure2024'
+        admin_password: 'treasure2024',
+        default_timeout_minutes: 15,
+        hint_penalty_minutes: 5,
+        organizers: []
     };
 
     if (!fs.existsSync(CONFIG_FILE)) {
@@ -153,7 +180,14 @@ function loadConfig() {
     const { frontmatter } = parseMarkdownWithFrontmatter(content);
 
     return {
-        admin_password: frontmatter.admin_password || defaults.admin_password
+        admin_password: frontmatter.admin_password || defaults.admin_password,
+        default_timeout_minutes: frontmatter.default_timeout_minutes
+            ? parseInt(frontmatter.default_timeout_minutes)
+            : defaults.default_timeout_minutes,
+        hint_penalty_minutes: frontmatter.hint_penalty_minutes
+            ? parseInt(frontmatter.hint_penalty_minutes)
+            : defaults.hint_penalty_minutes,
+        organizers: frontmatter.organizers || defaults.organizers
     };
 }
 
@@ -162,7 +196,26 @@ function loadConfig() {
 // ============================================================
 
 function generateTaskPageHtml(options) {
-    const { teamId, teamName, stepNumber, totalSteps, taskId, taskHtml, correctHashSHA256, nextTaskFile, isFinalPage } = options;
+    const { teamId, teamName, stepNumber, totalSteps, taskId, taskHtml, correctHashSHA256, nextTaskFile, isFinalPage, timeoutMinutes, hintPenaltyMinutes, organizers, cacheBuster } = options;
+
+    const organizerContactsHtml = organizers && organizers.length > 0 ? `
+        <div id="timeout-help" class="timeout-help hidden">
+            <p class="timeout-message">Time's up! Need help? Contact an organizer:</p>
+            <div class="organizer-contacts">
+                ${organizers.map(org => `
+                <div class="organizer-card">
+                    <strong>${org.name}</strong>
+                    <div class="contact-links">
+                        ${org.phone ? `<a href="tel:${org.phone}" class="contact-link phone">Call</a>` : ''}
+                        ${org.whatsapp ? `<a href="https://wa.me/${org.whatsapp.replace(/[^0-9]/g, '')}" class="contact-link whatsapp" target="_blank">WhatsApp</a>` : ''}
+                        ${org.telegram ? `<a href="https://t.me/${org.telegram.replace('@', '')}" class="contact-link telegram" target="_blank">Telegram</a>` : ''}
+                    </div>
+                </div>
+                `).join('')}
+            </div>
+            <button id="get-hint-btn" class="hint-btn">Get Answer (+${hintPenaltyMinutes} min penalty)</button>
+        </div>
+    ` : '';
 
     const formHtml = isFinalPage ? '' : `
         <form id="code-form" class="code-form">
@@ -177,7 +230,14 @@ function generateTaskPageHtml(options) {
             <button type="submit" class="submit-btn">Submit</button>
         </form>
         <p id="error-message" class="error-message hidden">Incorrect code, try again!</p>
+        ${organizerContactsHtml}
     `;
+
+    const penaltyDisplayHtml = !isFinalPage ? `
+        <div id="penalty-display" class="penalty-display hidden">
+            <span>Penalty: +<span id="penalty-time">0</span> min</span>
+        </div>
+    ` : '';
 
     const trackingScript = `
     <script>
@@ -189,16 +249,19 @@ function generateTaskPageHtml(options) {
         };
     </script>`;
 
-    const scriptHtml = isFinalPage ? trackingScript + `
-    <script src="../js/game.js"></script>
-    ` : trackingScript + `
+    const taskConfigScript = isFinalPage ? '' : `
     <script>
-        const TASK_CONFIG = {
+        window.TASK_CONFIG = {
             correctHashSHA256: "${correctHashSHA256}",
-            nextTaskFile: "${nextTaskFile}"
+            nextTaskFile: "${nextTaskFile}",
+            timeoutMinutes: ${timeoutMinutes || 0},
+            hintPenaltyMinutes: ${hintPenaltyMinutes || 5}
         };
-    </script>
-    <script src="../js/game.js"></script>
+    </script>`;
+
+    const scriptHtml = trackingScript + taskConfigScript + `
+    <script>window.GAME_VERSION = '${cacheBuster}';</script>
+    <script src="../js/game.js?v=${cacheBuster}"></script>
     `;
 
     return `<!DOCTYPE html>
@@ -208,14 +271,18 @@ function generateTaskPageHtml(options) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
     <title>${teamName} - Step ${stepNumber}/${totalSteps}</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/style.css?v=${cacheBuster}">
 </head>
 <body>
     <div class="container">
         <header class="header">
             <span class="team-name">${teamName}</span>
-            <span class="progress">Step ${stepNumber}/${totalSteps}</span>
+            <div class="header-right">
+                ${!isFinalPage && timeoutMinutes ? `<span id="timer" class="timer">${String(Math.floor(timeoutMinutes)).padStart(2, '0')}:00</span>` : ''}
+                <span class="progress">Step ${stepNumber}/${totalSteps}</span>
+            </div>
         </header>
+        ${penaltyDisplayHtml}
 
         <main class="task-content">
             ${taskHtml}
@@ -229,7 +296,7 @@ function generateTaskPageHtml(options) {
 }
 
 function generateStartPageHtml(options) {
-    const { teamId, teamName, welcomeHtml, nextTaskFile } = options;
+    const { teamId, teamName, welcomeHtml, nextTaskFile, cacheBuster } = options;
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -238,7 +305,7 @@ function generateStartPageHtml(options) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
     <title>${teamName} - Treasure Hunt</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/style.css?v=${cacheBuster}">
 </head>
 <body>
     <div class="container">
@@ -262,7 +329,8 @@ function generateStartPageHtml(options) {
             taskId: "start"
         };
     </script>
-    <script src="../js/game.js"></script>
+    <script>window.GAME_VERSION = '${cacheBuster}';</script>
+    <script src="../js/game.js?v=${cacheBuster}"></script>
     <script>
         function trackStart() {
             trackEvent('game_start');
@@ -727,6 +795,152 @@ body {
 .start-btn:hover {
     background: #5a6fd6;
 }
+
+/* Timer styles */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.timer {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    font-weight: bold;
+    background: #f0f0f0;
+    color: #333;
+    padding: 5px 10px;
+    border-radius: 8px;
+    min-width: 60px;
+    text-align: center;
+}
+
+.timer-warning {
+    background: #fff3cd;
+    color: #856404;
+    animation: pulse 1s infinite;
+}
+
+.timer-expired {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Penalty display */
+.penalty-display {
+    background: #fff3cd;
+    color: #856404;
+    padding: 8px 15px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Timeout help section */
+.timeout-help {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px solid #dee2e6;
+}
+
+.timeout-message {
+    color: #dc3545;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.organizer-contacts {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.organizer-card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.organizer-card strong {
+    display: block;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.contact-links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.contact-link {
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.contact-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.contact-link.phone {
+    background: #28a745;
+    color: white;
+}
+
+.contact-link.whatsapp {
+    background: #25D366;
+    color: white;
+}
+
+.contact-link.telegram {
+    background: #0088cc;
+    color: white;
+}
+
+/* Hint button */
+.hint-btn {
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px 20px;
+    background: #ffc107;
+    color: #212529;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.hint-btn:hover:not(:disabled) {
+    background: #e0a800;
+}
+
+.hint-btn:disabled,
+.hint-btn.hint-used {
+    background: #6c757d;
+    color: white;
+    cursor: not-allowed;
+}
 `;
 
 const GAME_JS = `
@@ -736,8 +950,14 @@ const GAME_JS = `
 
 const TRACKING_ENABLED = true;
 const API_BASE = window.location.origin;
+const GAME_VERSION = window.GAME_VERSION || '1';
+const PENALTY_STORAGE_KEY = 'treasureHuntPenalty_' + GAME_VERSION;
+const TIMER_STORAGE_PREFIX = 'treasureHuntTimer_' + GAME_VERSION + '_';
 
 let currentLocation = null;
+let timerInterval = null;
+let timeRemaining = 0;
+let timedOut = false;
 
 // Get GPS location
 function initGPS() {
@@ -761,6 +981,7 @@ function trackEvent(type, data = {}) {
     if (!TRACKING_ENABLED) return;
     if (!window.TEAM_CONFIG) return;
 
+    const totalPenalty = getPenalty();
     const event = {
         type,
         teamId: TEAM_CONFIG.teamId,
@@ -768,6 +989,7 @@ function trackEvent(type, data = {}) {
         step: TEAM_CONFIG.step,
         taskId: TEAM_CONFIG.taskId,
         location: currentLocation,
+        penaltyMinutes: totalPenalty,
         ...data
     };
 
@@ -778,11 +1000,143 @@ function trackEvent(type, data = {}) {
     }).catch(() => {}); // Silently fail if server unavailable
 }
 
-// Track page view on load
-document.addEventListener('DOMContentLoaded', () => {
-    initGPS();
-    setTimeout(() => trackEvent('page_view'), 1000); // Wait for GPS
-});
+// ============================================================
+// Penalty Management
+// ============================================================
+
+function getPenalty() {
+    const stored = sessionStorage.getItem(PENALTY_STORAGE_KEY);
+    return stored ? parseInt(stored, 10) : 0;
+}
+
+function addPenalty(minutes) {
+    const current = getPenalty();
+    const newPenalty = current + minutes;
+    sessionStorage.setItem(PENALTY_STORAGE_KEY, newPenalty.toString());
+    updatePenaltyDisplay();
+    return newPenalty;
+}
+
+function updatePenaltyDisplay() {
+    const penaltyEl = document.getElementById('penalty-display');
+    const penaltyTimeEl = document.getElementById('penalty-time');
+    const penalty = getPenalty();
+
+    if (penaltyEl && penaltyTimeEl) {
+        if (penalty > 0) {
+            penaltyTimeEl.textContent = penalty;
+            penaltyEl.classList.remove('hidden');
+        } else {
+            penaltyEl.classList.add('hidden');
+        }
+    }
+}
+
+// ============================================================
+// Timer Management
+// ============================================================
+
+function getTimerKey() {
+    if (!window.TEAM_CONFIG) return null;
+    return TIMER_STORAGE_PREFIX + TEAM_CONFIG.teamId + '_' + TEAM_CONFIG.step;
+}
+
+function getStartTime() {
+    const key = getTimerKey();
+    if (!key) return null;
+    const stored = sessionStorage.getItem(key);
+    return stored ? parseInt(stored, 10) : null;
+}
+
+function setStartTime() {
+    const key = getTimerKey();
+    if (!key) return;
+    if (!getStartTime()) {
+        sessionStorage.setItem(key, Date.now().toString());
+    }
+}
+
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+}
+
+function updateTimerDisplay() {
+    const timerEl = document.getElementById('timer');
+    if (!timerEl) return;
+
+    if (timeRemaining <= 0) {
+        timerEl.textContent = '00:00';
+        timerEl.classList.add('timer-expired');
+        return;
+    }
+
+    timerEl.textContent = formatTime(timeRemaining);
+
+    // Warning state when under 2 minutes
+    if (timeRemaining <= 120) {
+        timerEl.classList.add('timer-warning');
+    }
+}
+
+function startTimer() {
+    if (!window.TASK_CONFIG || !TASK_CONFIG.timeoutMinutes || TASK_CONFIG.timeoutMinutes <= 0) return;
+
+    setStartTime();
+    const startTime = getStartTime();
+    const timeoutMs = TASK_CONFIG.timeoutMinutes * 60 * 1000;
+    const elapsed = Date.now() - startTime;
+    timeRemaining = Math.max(0, Math.floor((timeoutMs - elapsed) / 1000));
+
+    updateTimerDisplay();
+
+    if (timeRemaining <= 0) {
+        handleTimeout();
+        return;
+    }
+
+    timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateTimerDisplay();
+
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            handleTimeout();
+        }
+    }, 1000);
+}
+
+function handleTimeout() {
+    if (timedOut) return;
+    timedOut = true;
+
+    const timeoutHelp = document.getElementById('timeout-help');
+    if (timeoutHelp) {
+        timeoutHelp.classList.remove('hidden');
+    }
+
+    trackEvent('timeout', { taskId: TEAM_CONFIG.taskId });
+}
+
+function setupHintButton() {
+    const hintBtn = document.getElementById('get-hint-btn');
+    if (!hintBtn) return;
+
+    hintBtn.addEventListener('click', () => {
+        const penalty = TASK_CONFIG.hintPenaltyMinutes || 5;
+        addPenalty(penalty);
+        trackEvent('hint_requested', {
+            taskId: TEAM_CONFIG.taskId,
+            penaltyAdded: penalty
+        });
+
+        // Show confirmation
+        hintBtn.textContent = 'Penalty added! Contact organizer for answer';
+        hintBtn.disabled = true;
+        hintBtn.classList.add('hint-used');
+    });
+}
 
 // ============================================================
 // Game Logic
@@ -797,11 +1151,15 @@ async function sha256(message) {
 
 function showError() {
     const errorEl = document.getElementById('error-message');
+    if (!errorEl) return;
+
     errorEl.classList.remove('hidden');
 
     const input = document.getElementById('code-input');
-    input.value = '';
-    input.focus();
+    if (input) {
+        input.value = '';
+        input.focus();
+    }
 
     setTimeout(() => {
         errorEl.classList.add('hidden');
@@ -817,14 +1175,20 @@ async function verifyAndRedirect(code) {
     const hash = await sha256(code);
     const success = hash === TASK_CONFIG.correctHashSHA256;
 
-    // Track attempt
-    trackEvent('code_attempt', { code: code.toUpperCase().trim(), success });
+    // Track attempt with penalty info
+    trackEvent('code_attempt', {
+        code: code.toUpperCase().trim(),
+        success,
+        penaltyMinutes: getPenalty()
+    });
 
     if (success) {
+        if (timerInterval) clearInterval(timerInterval);
+
         // Check if this is the final page (grand finale)
         if (TASK_CONFIG.nextTaskFile.includes('grand_finale') ||
             TASK_CONFIG.nextTaskFile.includes('finale')) {
-            trackEvent('game_complete');
+            trackEvent('game_complete', { totalPenaltyMinutes: getPenalty() });
         }
         window.location.href = TASK_CONFIG.nextTaskFile;
     } else {
@@ -832,13 +1196,38 @@ async function verifyAndRedirect(code) {
     }
 }
 
-const form = document.getElementById('code-form');
-if (form) {
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const code = document.getElementById('code-input').value;
-        verifyAndRedirect(code);
-    });
+// ============================================================
+// Initialization
+// ============================================================
+
+function init() {
+    initGPS();
+    updatePenaltyDisplay();
+
+    // Start timer if configured
+    if (window.TASK_CONFIG && TASK_CONFIG.timeoutMinutes > 0) {
+        startTimer();
+        setupHintButton();
+    }
+
+    // Setup form handler
+    const form = document.getElementById('code-form');
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const code = document.getElementById('code-input').value;
+            verifyAndRedirect(code);
+        });
+    }
+
+    setTimeout(() => trackEvent('page_view'), 1000); // Wait for GPS
+}
+
+// Run init when DOM is ready (handle case where DOMContentLoaded already fired)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
 }
 `;
 
@@ -935,6 +1324,9 @@ function generate() {
     fs.writeFileSync(path.join(DIST_DIR, 'js', 'game.js'), GAME_JS);
     console.log('Generated CSS and JS assets');
 
+    // Cache buster for all generated pages
+    const cacheBuster = Date.now();
+
     const teamStartUrls = [];
     const teamTaskUrls = {};  // { teamId: [url1, url2, ...] }
 
@@ -1004,7 +1396,8 @@ function generate() {
             teamId,
             teamName: team.name,
             welcomeHtml: team.welcomeHtml,
-            nextTaskFile: firstTaskFilename
+            nextTaskFile: firstTaskFilename,
+            cacheBuster
         });
 
         fs.writeFileSync(path.join(teamDir, startFilename), startHtml);
@@ -1030,6 +1423,9 @@ function generate() {
                 nextTaskFile = files[i + 1].filename;
             }
 
+            // Get timeout: task-specific or global default
+            const timeoutMinutes = file.task.timeout_minutes || config.default_timeout_minutes;
+
             const taskHtml = generateTaskPageHtml({
                 teamId,
                 teamName: team.name,
@@ -1039,7 +1435,11 @@ function generate() {
                 taskHtml: file.task.html,
                 correctHashSHA256,
                 nextTaskFile,
-                isFinalPage: isLastTask
+                isFinalPage: isLastTask,
+                timeoutMinutes,
+                hintPenaltyMinutes: config.hint_penalty_minutes,
+                organizers: config.organizers,
+                cacheBuster
             });
 
             fs.writeFileSync(path.join(teamDir, file.filename), taskHtml);

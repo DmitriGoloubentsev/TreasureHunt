@@ -1,5 +1,6 @@
 ---
 code: GNOME42
+timeout_minutes: 10
 ---
 
 # The Garden Gnome

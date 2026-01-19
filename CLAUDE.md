@@ -63,12 +63,16 @@ cd dist && python3 -m http.server 8080
 ```markdown
 ---
 code: MYCODE123
+timeout_minutes: 10
 ---
 
 # Task Title
 
 Description shown to players (Markdown supported).
 ```
+
+- `code`: The answer code players must enter (required, except for final pages)
+- `timeout_minutes`: Optional per-task time limit (overrides global default)
 
 ### Team (teams/*.md)
 ```markdown
@@ -99,8 +103,37 @@ cd dist && python3 -m http.server 8080
 cd server && npm install && npm start
 ```
 
+### Config (CONFIG.md)
+```markdown
+---
+admin_password: treasure2024
+default_timeout_minutes: 15
+hint_penalty_minutes: 5
+organizers:
+  - name: Alex
+    phone: +1234567890
+    telegram: alex_org
+    whatsapp: +1234567890
+---
+```
+
+- `admin_password`: Password for admin.html and testing.html pages
+- `default_timeout_minutes`: Global time limit per task (can be overridden per task)
+- `hint_penalty_minutes`: Time penalty added when teams request organizer help
+- `organizers`: List of organizer contacts shown when timer expires
+
+## Timer and Penalty System
+
+Each task has a countdown timer. When time expires:
+1. Organizer contacts appear with Call/WhatsApp/Telegram buttons
+2. Teams can click "Get Answer" which adds a time penalty
+3. Total penalty is tracked across all tasks in the session
+4. Penalty is included in tracking events sent to server
+
 ## Important Notes
 
 - Codes are case-insensitive (normalized to uppercase)
 - TESTING.md is auto-generated with all codes and URLs (gitignored)
 - dist/index.html is an admin page listing all team start URLs
+- Timer starts when page loads and persists if page is refreshed
+- Penalties are stored in sessionStorage (cleared when browser closes)

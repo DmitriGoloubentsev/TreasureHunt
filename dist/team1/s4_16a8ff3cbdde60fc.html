@@ -5,14 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
     <title>Red Dragons - Step 4/6</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/style.css?v=1768833194604">
 </head>
 <body>
     <div class="container">
         <header class="header">
             <span class="team-name">Red Dragons</span>
-            <span class="progress">Step 4/6</span>
+            <div class="header-right">
+                <span id="timer" class="timer">15:00</span>
+                <span class="progress">Step 4/6</span>
+            </div>
         </header>
+        
+        <div id="penalty-display" class="penalty-display hidden">
+            <span>Penalty: +<span id="penalty-time">0</span> min</span>
+        </div>
+    
 
         <main class="task-content">
             <h1>The Laundry Room Quest</h1>
@@ -34,6 +42,33 @@
             <button type="submit" class="submit-btn">Submit</button>
         </form>
         <p id="error-message" class="error-message hidden">Incorrect code, try again!</p>
+        
+        <div id="timeout-help" class="timeout-help hidden">
+            <p class="timeout-message">Time's up! Need help? Contact an organizer:</p>
+            <div class="organizer-contacts">
+                
+                <div class="organizer-card">
+                    <strong>Alex</strong>
+                    <div class="contact-links">
+                        <a href="tel:+1234567890" class="contact-link phone">Call</a>
+                        <a href="https://wa.me/1234567890" class="contact-link whatsapp" target="_blank">WhatsApp</a>
+                        <a href="https://t.me/alex_org" class="contact-link telegram" target="_blank">Telegram</a>
+                    </div>
+                </div>
+                
+                <div class="organizer-card">
+                    <strong>Sam</strong>
+                    <div class="contact-links">
+                        <a href="tel:+0987654321" class="contact-link phone">Call</a>
+                        <a href="https://wa.me/0987654321" class="contact-link whatsapp" target="_blank">WhatsApp</a>
+                        <a href="https://t.me/sam_org" class="contact-link telegram" target="_blank">Telegram</a>
+                    </div>
+                </div>
+                
+            </div>
+            <button id="get-hint-btn" class="hint-btn">Get Answer (+5 min penalty)</button>
+        </div>
+    
     
     </div>
     
@@ -46,12 +81,15 @@
         };
     </script>
     <script>
-        const TASK_CONFIG = {
+        window.TASK_CONFIG = {
             correctHashSHA256: "6ebb9e233e4dec9dcce1716456fbb046ff3d5669affd1a55602d5c4fbf5f7082",
-            nextTaskFile: "s5_58d24a409e4d5f8d.html"
+            nextTaskFile: "s5_58d24a409e4d5f8d.html",
+            timeoutMinutes: 15,
+            hintPenaltyMinutes: 5
         };
     </script>
-    <script src="../js/game.js"></script>
+    <script>window.GAME_VERSION = '1768833194604';</script>
+    <script src="../js/game.js?v=1768833194604"></script>
     
 </body>
 </html>
