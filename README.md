@@ -120,12 +120,18 @@ cd dist && python3 -m http.server 8080
 ├── teams/                    # Team configurations (edit these)
 │   ├── team1.md                # Main team
 │   └── team2.md ... team5.md   # Guest teams
+├── CONFIG.md                 # Admin password configuration
 ├── generator/
 │   └── generate.js           # Build script
 ├── server/                   # Optional monitoring server
 │   ├── server.js
 │   └── admin.html
 ├── dist/                     # Generated output (don't edit)
+│   ├── index.html              # Public landing page
+│   ├── admin.html              # Password-protected team links
+│   └── testing.html            # Password-protected testing dashboard
+├── .github/workflows/        # Auto-deployment workflow
+│   └── deploy.yml
 └── TESTING.md                # Generated - all codes for testing
 ```
 
@@ -218,20 +224,80 @@ npm start
 - Browser history (use incognito mode)
 - Players sharing URLs directly (trust your players!)
 
+## Configuration
+
+Edit `CONFIG.md` to set your admin password:
+
+```markdown
+---
+admin_password: your_secret_password
+---
+```
+
+This password protects the admin and testing pages.
+
 ## Deployment
+
+### Automatic Deployment with Surge.sh (Recommended)
+
+The repo includes a GitHub Actions workflow that deploys automatically on every push.
+
+**Setup:**
+
+1. Get your Surge token:
+   ```bash
+   npx surge login
+   npx surge token
+   ```
+
+2. Add secrets in GitHub repo **Settings → Secrets and variables → Actions**:
+   - **Secret** `SURGE_TOKEN`: your surge token
+   - **Variable** (optional) `SURGE_DOMAIN`: custom domain like `my-hunt.surge.sh`
+
+3. Push to `main` - deployment happens automatically
+
+**Your site will be at:**
+- `https://your-domain.surge.sh` - Public landing page
+- `https://your-domain.surge.sh/admin.html` - Team start links (password protected)
+- `https://your-domain.surge.sh/testing.html` - All codes & URLs (password protected)
 
 ### GitHub Pages
 
 1. Push your repo to GitHub
-2. Go to Settings > Pages
-3. Set source to `dist/` folder or `gh-pages` branch
-4. Run `node generator/generate.js` to create `TESTING.md` with team URLs
+2. Go to Settings → Pages
+3. Set source to "GitHub Actions"
+4. Create `.github/workflows/deploy.yml`:
+   ```yaml
+   name: Deploy to GitHub Pages
+   on:
+     push:
+       branches: [main]
+   permissions:
+     contents: read
+     pages: write
+     id-token: write
+   jobs:
+     build-and-deploy:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v4
+         - uses: actions/setup-node@v4
+           with:
+             node-version: '20'
+         - run: node generator/generate.js
+         - uses: actions/configure-pages@v4
+         - uses: actions/upload-pages-artifact@v3
+           with:
+             path: dist
+         - uses: actions/deploy-pages@v4
+   ```
 
 ### Netlify / Vercel
 
 1. Connect your repo
-2. Set publish directory to `dist`
-3. Deploy
+2. Set build command: `node generator/generate.js`
+3. Set publish directory: `dist`
+4. Deploy
 
 ## Example Game
 
