@@ -12,6 +12,7 @@ const TASKS_DIR = path.join(__dirname, '..', 'tasks');
 const TEAMS_DIR = path.join(__dirname, '..', 'teams');
 const DIST_DIR = path.join(__dirname, '..', 'dist');
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
+const CONFIG_FILE = path.join(__dirname, '..', 'CONFIG.md');
 
 // ============================================================
 // Utility Functions
@@ -137,6 +138,23 @@ function loadTeams() {
     }
 
     return teams;
+}
+
+function loadConfig() {
+    const defaults = {
+        admin_password: 'treasure2024'
+    };
+
+    if (!fs.existsSync(CONFIG_FILE)) {
+        return defaults;
+    }
+
+    const content = fs.readFileSync(CONFIG_FILE, 'utf-8');
+    const { frontmatter } = parseMarkdownWithFrontmatter(content);
+
+    return {
+        admin_password: frontmatter.admin_password || defaults.admin_password
+    };
 }
 
 // ============================================================
@@ -275,6 +293,208 @@ function generateIndexHtml() {
             <p>Good luck and have fun!</p>
         </main>
     </div>
+</body>
+</html>`;
+}
+
+function generateAdminHtml(teamStartUrls, adminPassword) {
+    const passwordHash = sha256(adminPassword);
+
+    const teamLinksHtml = teamStartUrls.map(t =>
+        `<tr><td>${t.name}</td><td><code>${t.id}</code></td><td><a href="${t.url}" target="_blank">${t.url}</a></td></tr>`
+    ).join('\n                    ');
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Treasure Hunt</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container admin">
+        <header class="header">
+            <span class="team-name">Organizer Panel</span>
+        </header>
+
+        <div id="login-section">
+            <main class="task-content">
+                <h1>Organizer Access</h1>
+                <p>Enter the admin password to view team start links.</p>
+            </main>
+            <form id="password-form" class="code-form">
+                <input type="password" id="password-input" class="code-input" placeholder="Password" autocomplete="off" autofocus>
+                <button type="submit" class="submit-btn">Enter</button>
+            </form>
+            <p id="error-message" class="error-message hidden">Incorrect password</p>
+        </div>
+
+        <div id="admin-content" class="hidden">
+            <main class="task-content">
+                <h1>Team Start Links</h1>
+                <p class="warning">Share each link only with the corresponding team!</p>
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>Team</th><th>ID</th><th>Start URL</th></tr>
+                    </thead>
+                    <tbody>
+                    ${teamLinksHtml}
+                    </tbody>
+                </table>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_HASH = "${passwordHash}";
+
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message.toUpperCase().trim());
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        document.getElementById('password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password-input').value;
+            const hash = await sha256(password);
+
+            if (hash === ADMIN_HASH) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+            } else {
+                document.getElementById('error-message').classList.remove('hidden');
+                document.getElementById('password-input').value = '';
+                setTimeout(() => {
+                    document.getElementById('error-message').classList.add('hidden');
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>`;
+}
+
+function generateTestingHtml(teams, tasks, teamStartUrls, teamTaskUrls, adminPassword) {
+    const passwordHash = sha256(adminPassword);
+
+    const taskRows = Object.entries(tasks)
+        .filter(([_, task]) => task.code && task.code !== 'null')
+        .map(([taskId, task]) => `<tr><td><code>${taskId}</code></td><td><code>${task.code}</code></td></tr>`)
+        .join('\n                        ');
+
+    const teamSections = Object.entries(teams).map(([teamId, team]) => {
+        const startUrl = teamStartUrls.find(t => t.id === teamId);
+        const taskUrls = teamTaskUrls[teamId] || [];
+        const flowSteps = [`<tr><td>Start</td><td>(click button)</td><td>${team.sequence[0]}</td><td><a href="${startUrl?.url}" target="_blank">${startUrl?.url}</a></td></tr>`];
+
+        for (let i = 0; i < team.sequence.length; i++) {
+            const taskId = team.sequence[i];
+            const task = tasks[taskId];
+            const nextTask = i < team.sequence.length - 1 ? team.sequence[i + 1] : '(end)';
+            const taskUrl = taskUrls[i];
+            const code = task?.code || '-';
+            flowSteps.push(`<tr><td>${i + 1}</td><td><code>${code}</code></td><td>${nextTask}</td><td><a href="${taskUrl}" target="_blank">${taskUrl}</a></td></tr>`);
+        }
+
+        return `
+                <div class="team-section">
+                    <h3>${team.name} <small>(${teamId})</small></h3>
+                    <p><strong>Sequence:</strong> ${team.sequence.join(' → ')}</p>
+                    <table class="admin-table">
+                        <thead><tr><th>Step</th><th>Code</th><th>Next Task</th><th>URL</th></tr></thead>
+                        <tbody>${flowSteps.join('\n                            ')}</tbody>
+                    </table>
+                </div>`;
+    }).join('\n');
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing - Treasure Hunt</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .testing { max-width: 1100px; }
+        .team-section { margin: 30px 0; padding: 20px; background: #f9f9f9; border-radius: 10px; }
+        .team-section h3 { margin-bottom: 10px; color: #667eea; }
+        .team-section small { color: #888; font-weight: normal; }
+        .team-section p { margin: 5px 0; }
+        section { margin: 30px 0; }
+        .admin-table a { word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="container testing">
+        <header class="header">
+            <span class="team-name">Testing Dashboard</span>
+        </header>
+
+        <div id="login-section">
+            <main class="task-content">
+                <h1>Testing Access</h1>
+                <p>Enter the admin password to view all codes and URLs.</p>
+            </main>
+            <form id="password-form" class="code-form">
+                <input type="password" id="password-input" class="code-input" placeholder="Password" autocomplete="off" autofocus>
+                <button type="submit" class="submit-btn">Enter</button>
+            </form>
+            <p id="error-message" class="error-message hidden">Incorrect password</p>
+        </div>
+
+        <div id="testing-content" class="hidden">
+            <main class="task-content">
+                <h1>Game Testing Reference</h1>
+                <p class="warning">This page contains all codes and URLs. Do not share with players!</p>
+
+                <section>
+                    <h2>All Task Codes</h2>
+                    <table class="admin-table">
+                        <thead><tr><th>Task ID</th><th>Code</th></tr></thead>
+                        <tbody>
+                        ${taskRows}
+                        </tbody>
+                    </table>
+                </section>
+
+                <section>
+                    <h2>Team Walkthroughs</h2>
+                    ${teamSections}
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_HASH = "${passwordHash}";
+
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message.toUpperCase().trim());
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        document.getElementById('password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password-input').value;
+            const hash = await sha256(password);
+
+            if (hash === ADMIN_HASH) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('testing-content').classList.remove('hidden');
+            } else {
+                document.getElementById('error-message').classList.remove('hidden');
+                document.getElementById('password-input').value = '';
+                setTimeout(() => {
+                    document.getElementById('error-message').classList.add('hidden');
+                }, 2000);
+            }
+        });
+    </script>
 </body>
 </html>`;
 }
@@ -691,6 +911,9 @@ function generateTestingDoc(teams, tasks, teamStartUrls) {
 // ============================================================
 
 function generate() {
+    console.log('Loading config...');
+    const config = loadConfig();
+
     console.log('Loading tasks...');
     const tasks = loadTasks();
     console.log(`  Found ${Object.keys(tasks).length} tasks`);
@@ -713,9 +936,11 @@ function generate() {
     console.log('Generated CSS and JS assets');
 
     const teamStartUrls = [];
+    const teamTaskUrls = {};  // { teamId: [url1, url2, ...] }
 
     // Generate pages for each team
     for (const [teamId, team] of Object.entries(teams)) {
+        teamTaskUrls[teamId] = [];
         console.log(`\nGenerating pages for ${team.name}...`);
 
         const teamDir = path.join(DIST_DIR, teamId);
@@ -773,7 +998,6 @@ function generate() {
         // Now generate HTML files
 
         // 1. Start page
-        const firstTask = tasks[sequence[0]];
         const firstTaskFilename = files[0].filename;
 
         const startHtml = generateStartPageHtml({
@@ -819,6 +1043,7 @@ function generate() {
             });
 
             fs.writeFileSync(path.join(teamDir, file.filename), taskHtml);
+            teamTaskUrls[teamId].push(`${teamId}/${file.filename}`);
             console.log(`  Created ${file.filename} (${file.taskId}${isLastTask ? ' - FINAL' : ''})`);
         }
     }
@@ -828,11 +1053,23 @@ function generate() {
     fs.writeFileSync(path.join(DIST_DIR, 'index.html'), indexHtml);
     console.log('\nGenerated index.html');
 
+    // Generate password-protected admin page
+    const adminHtml = generateAdminHtml(teamStartUrls, config.admin_password);
+    fs.writeFileSync(path.join(DIST_DIR, 'admin.html'), adminHtml);
+    console.log('Generated admin.html (password-protected)');
+
+    // Generate testing.html with all codes and flows (password-protected)
+    const testingHtml = generateTestingHtml(teams, tasks, teamStartUrls, teamTaskUrls, config.admin_password);
+    fs.writeFileSync(path.join(DIST_DIR, 'testing.html'), testingHtml);
+    console.log('Generated testing.html (password-protected)');
+
     // Generate TESTING.md
     generateTestingDoc(teams, tasks, teamStartUrls);
 
     console.log('\n✓ Generation complete!');
     console.log(`  Output directory: ${DIST_DIR}`);
+    console.log(`  Admin page: admin.html (password configured in CONFIG.md)`);
+    console.log(`  Testing page: testing.html`);
     console.log(`  Team start URLs:`);
     for (const t of teamStartUrls) {
         console.log(`    ${t.name}: ${t.url}`);

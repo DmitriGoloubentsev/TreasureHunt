@@ -1,0 +1,22 @@
+name: Deploy to Surge.sh
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate static site
+        run: node generator/generate.js
+
+      - name: Deploy to Surge
+        run: npx surge ./dist ${{ vars.SURGE_DOMAIN }} --token ${{ secrets.SURGE_TOKEN }}

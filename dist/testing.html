@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing - Treasure Hunt</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .testing { max-width: 1100px; }
+        .team-section { margin: 30px 0; padding: 20px; background: #f9f9f9; border-radius: 10px; }
+        .team-section h3 { margin-bottom: 10px; color: #667eea; }
+        .team-section small { color: #888; font-weight: normal; }
+        .team-section p { margin: 5px 0; }
+        section { margin: 30px 0; }
+        .admin-table a { word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="container testing">
+        <header class="header">
+            <span class="team-name">Testing Dashboard</span>
+        </header>
+
+        <div id="login-section">
+            <main class="task-content">
+                <h1>Testing Access</h1>
+                <p>Enter the admin password to view all codes and URLs.</p>
+            </main>
+            <form id="password-form" class="code-form">
+                <input type="password" id="password-input" class="code-input" placeholder="Password" autocomplete="off" autofocus>
+                <button type="submit" class="submit-btn">Enter</button>
+            </form>
+            <p id="error-message" class="error-message hidden">Incorrect password</p>
+        </div>
+
+        <div id="testing-content" class="hidden">
+            <main class="task-content">
+                <h1>Game Testing Reference</h1>
+                <p class="warning">This page contains all codes and URLs. Do not share with players!</p>
+
+                <section>
+                    <h2>All Task Codes</h2>
+                    <table class="admin-table">
+                        <thead><tr><th>Task ID</th><th>Code</th></tr></thead>
+                        <tbody>
+                        <tr><td><code>collect</code></td><td><code>CAKE</code></td></tr>
+                        <tr><td><code>task1</code></td><td><code>GNOME42</code></td></tr>
+                        <tr><td><code>task2</code></td><td><code>BOOKWORM55</code></td></tr>
+                        <tr><td><code>task3</code></td><td><code>FRIDGE99</code></td></tr>
+                        <tr><td><code>task4</code></td><td><code>OAKTREE22</code></td></tr>
+                        <tr><td><code>task5</code></td><td><code>TOOLS17</code></td></tr>
+                        <tr><td><code>task6</code></td><td><code>MIRROR33</code></td></tr>
+                        <tr><td><code>task7</code></td><td><code>DRYER88</code></td></tr>
+                        <tr><td><code>task8</code></td><td><code>PILLOW77</code></td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section>
+                    <h2>Team Walkthroughs</h2>
+                    
+                <div class="team-section">
+                    <h3>Red Dragons <small>(team1)</small></h3>
+                    <p><strong>Sequence:</strong> task1 → task3 → task5 → task7 → collect → grand_finale</p>
+                    <table class="admin-table">
+                        <thead><tr><th>Step</th><th>Code</th><th>Next Task</th><th>URL</th></tr></thead>
+                        <tbody><tr><td>Start</td><td>(click button)</td><td>task1</td><td><a href="team1/start_12f89611f410cde4.html" target="_blank">team1/start_12f89611f410cde4.html</a></td></tr>
+                            <tr><td>1</td><td><code>GNOME42</code></td><td>task3</td><td><a href="team1/s1_f45fcbe42b0c05e1.html" target="_blank">team1/s1_f45fcbe42b0c05e1.html</a></td></tr>
+                            <tr><td>2</td><td><code>FRIDGE99</code></td><td>task5</td><td><a href="team1/s2_f45fcbe42b0c05e1.html" target="_blank">team1/s2_f45fcbe42b0c05e1.html</a></td></tr>
+                            <tr><td>3</td><td><code>TOOLS17</code></td><td>task7</td><td><a href="team1/s3_4dc332274009c4d7.html" target="_blank">team1/s3_4dc332274009c4d7.html</a></td></tr>
+                            <tr><td>4</td><td><code>DRYER88</code></td><td>collect</td><td><a href="team1/s4_16a8ff3cbdde60fc.html" target="_blank">team1/s4_16a8ff3cbdde60fc.html</a></td></tr>
+                            <tr><td>5</td><td><code>CAKE</code></td><td>grand_finale</td><td><a href="team1/s5_58d24a409e4d5f8d.html" target="_blank">team1/s5_58d24a409e4d5f8d.html</a></td></tr>
+                            <tr><td>6</td><td><code>null</code></td><td>(end)</td><td><a href="team1/s6_f791e215081d6dfc.html" target="_blank">team1/s6_f791e215081d6dfc.html</a></td></tr></tbody>
+                    </table>
+                </div>
+
+                <div class="team-section">
+                    <h3>Blue Wizards <small>(team2)</small></h3>
+                    <p><strong>Sequence:</strong> task2 → task4 → task6 → task8 → finale_team2</p>
+                    <table class="admin-table">
+                        <thead><tr><th>Step</th><th>Code</th><th>Next Task</th><th>URL</th></tr></thead>
+                        <tbody><tr><td>Start</td><td>(click button)</td><td>task2</td><td><a href="team2/start_16ad8c82f6878a6a.html" target="_blank">team2/start_16ad8c82f6878a6a.html</a></td></tr>
+                            <tr><td>1</td><td><code>BOOKWORM55</code></td><td>task4</td><td><a href="team2/s1_b6773e98647cab66.html" target="_blank">team2/s1_b6773e98647cab66.html</a></td></tr>
+                            <tr><td>2</td><td><code>OAKTREE22</code></td><td>task6</td><td><a href="team2/s2_b6773e98647cab66.html" target="_blank">team2/s2_b6773e98647cab66.html</a></td></tr>
+                            <tr><td>3</td><td><code>MIRROR33</code></td><td>task8</td><td><a href="team2/s3_0d49ba3dfde65336.html" target="_blank">team2/s3_0d49ba3dfde65336.html</a></td></tr>
+                            <tr><td>4</td><td><code>PILLOW77</code></td><td>finale_team2</td><td><a href="team2/s4_4ad8d5f8c730ab91.html" target="_blank">team2/s4_4ad8d5f8c730ab91.html</a></td></tr>
+                            <tr><td>5</td><td><code>null</code></td><td>(end)</td><td><a href="team2/s5_195acdb5128a84f4.html" target="_blank">team2/s5_195acdb5128a84f4.html</a></td></tr></tbody>
+                    </table>
+                </div>
+
+                <div class="team-section">
+                    <h3>Green Explorers <small>(team3)</small></h3>
+                    <p><strong>Sequence:</strong> task4 → task1 → task7 → task3 → finale_team3</p>
+                    <table class="admin-table">
+                        <thead><tr><th>Step</th><th>Code</th><th>Next Task</th><th>URL</th></tr></thead>
+                        <tbody><tr><td>Start</td><td>(click button)</td><td>task4</td><td><a href="team3/start_74405f55529bcf68.html" target="_blank">team3/start_74405f55529bcf68.html</a></td></tr>
+                            <tr><td>1</td><td><code>OAKTREE22</code></td><td>task1</td><td><a href="team3/s1_0d49ba3dfde65336.html" target="_blank">team3/s1_0d49ba3dfde65336.html</a></td></tr>
+                            <tr><td>2</td><td><code>GNOME42</code></td><td>task7</td><td><a href="team3/s2_0d49ba3dfde65336.html" target="_blank">team3/s2_0d49ba3dfde65336.html</a></td></tr>
+                            <tr><td>3</td><td><code>DRYER88</code></td><td>task3</td><td><a href="team3/s3_f45fcbe42b0c05e1.html" target="_blank">team3/s3_f45fcbe42b0c05e1.html</a></td></tr>
+                            <tr><td>4</td><td><code>FRIDGE99</code></td><td>finale_team3</td><td><a href="team3/s4_58d24a409e4d5f8d.html" target="_blank">team3/s4_58d24a409e4d5f8d.html</a></td></tr>
+                            <tr><td>5</td><td><code>null</code></td><td>(end)</td><td><a href="team3/s5_4dc332274009c4d7.html" target="_blank">team3/s5_4dc332274009c4d7.html</a></td></tr></tbody>
+                    </table>
+                </div>
+
+                <div class="team-section">
+                    <h3>Yellow Stars <small>(team4)</small></h3>
+                    <p><strong>Sequence:</strong> task6 → task2 → task5 → task4 → finale_team4</p>
+                    <table class="admin-table">
+                        <thead><tr><th>Step</th><th>Code</th><th>Next Task</th><th>URL</th></tr></thead>
+                        <tbody><tr><td>Start</td><td>(click button)</td><td>task6</td><td><a href="team4/start_e9f64c9678dce013.html" target="_blank">team4/start_e9f64c9678dce013.html</a></td></tr>
+                            <tr><td>1</td><td><code>MIRROR33</code></td><td>task2</td><td><a href="team4/s1_4ad8d5f8c730ab91.html" target="_blank">team4/s1_4ad8d5f8c730ab91.html</a></td></tr>
+                            <tr><td>2</td><td><code>BOOKWORM55</code></td><td>task5</td><td><a href="team4/s2_4ad8d5f8c730ab91.html" target="_blank">team4/s2_4ad8d5f8c730ab91.html</a></td></tr>
+                            <tr><td>3</td><td><code>TOOLS17</code></td><td>task4</td><td><a href="team4/s3_b6773e98647cab66.html" target="_blank">team4/s3_b6773e98647cab66.html</a></td></tr>
+                            <tr><td>4</td><td><code>OAKTREE22</code></td><td>finale_team4</td><td><a href="team4/s4_16a8ff3cbdde60fc.html" target="_blank">team4/s4_16a8ff3cbdde60fc.html</a></td></tr>
+                            <tr><td>5</td><td><code>null</code></td><td>(end)</td><td><a href="team4/s5_0d49ba3dfde65336.html" target="_blank">team4/s5_0d49ba3dfde65336.html</a></td></tr></tbody>
+                    </table>
+                </div>
+
+                <div class="team-section">
+                    <h3>Purple Ninjas <small>(team5)</small></h3>
+                    <p><strong>Sequence:</strong> task8 → task3 → task1 → task6 → finale_team5</p>
+                    <table class="admin-table">
+                        <thead><tr><th>Step</th><th>Code</th><th>Next Task</th><th>URL</th></tr></thead>
+                        <tbody><tr><td>Start</td><td>(click button)</td><td>task8</td><td><a href="team5/start_d5b94bfe0920e594.html" target="_blank">team5/start_d5b94bfe0920e594.html</a></td></tr>
+                            <tr><td>1</td><td><code>PILLOW77</code></td><td>task3</td><td><a href="team5/s1_195acdb5128a84f4.html" target="_blank">team5/s1_195acdb5128a84f4.html</a></td></tr>
+                            <tr><td>2</td><td><code>FRIDGE99</code></td><td>task1</td><td><a href="team5/s2_195acdb5128a84f4.html" target="_blank">team5/s2_195acdb5128a84f4.html</a></td></tr>
+                            <tr><td>3</td><td><code>GNOME42</code></td><td>task6</td><td><a href="team5/s3_4dc332274009c4d7.html" target="_blank">team5/s3_4dc332274009c4d7.html</a></td></tr>
+                            <tr><td>4</td><td><code>MIRROR33</code></td><td>finale_team5</td><td><a href="team5/s4_f45fcbe42b0c05e1.html" target="_blank">team5/s4_f45fcbe42b0c05e1.html</a></td></tr>
+                            <tr><td>5</td><td><code>null</code></td><td>(end)</td><td><a href="team5/s5_4ad8d5f8c730ab91.html" target="_blank">team5/s5_4ad8d5f8c730ab91.html</a></td></tr></tbody>
+                    </table>
+                </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_HASH = "38dd973d9d0d4962e3f6a1305d400361d6dd4e1ff5bd18e0840a8def9d627969";
+
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message.toUpperCase().trim());
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        document.getElementById('password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password-input').value;
+            const hash = await sha256(password);
+
+            if (hash === ADMIN_HASH) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('testing-content').classList.remove('hidden');
+            } else {
+                document.getElementById('error-message').classList.remove('hidden');
+                document.getElementById('password-input').value = '';
+                setTimeout(() => {
+                    document.getElementById('error-message').classList.add('hidden');
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>

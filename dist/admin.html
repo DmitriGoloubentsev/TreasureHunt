@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Treasure Hunt</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container admin">
+        <header class="header">
+            <span class="team-name">Organizer Panel</span>
+        </header>
+
+        <div id="login-section">
+            <main class="task-content">
+                <h1>Organizer Access</h1>
+                <p>Enter the admin password to view team start links.</p>
+            </main>
+            <form id="password-form" class="code-form">
+                <input type="password" id="password-input" class="code-input" placeholder="Password" autocomplete="off" autofocus>
+                <button type="submit" class="submit-btn">Enter</button>
+            </form>
+            <p id="error-message" class="error-message hidden">Incorrect password</p>
+        </div>
+
+        <div id="admin-content" class="hidden">
+            <main class="task-content">
+                <h1>Team Start Links</h1>
+                <p class="warning">Share each link only with the corresponding team!</p>
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>Team</th><th>ID</th><th>Start URL</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr><td>Red Dragons</td><td><code>team1</code></td><td><a href="team1/start_12f89611f410cde4.html" target="_blank">team1/start_12f89611f410cde4.html</a></td></tr>
+                    <tr><td>Blue Wizards</td><td><code>team2</code></td><td><a href="team2/start_16ad8c82f6878a6a.html" target="_blank">team2/start_16ad8c82f6878a6a.html</a></td></tr>
+                    <tr><td>Green Explorers</td><td><code>team3</code></td><td><a href="team3/start_74405f55529bcf68.html" target="_blank">team3/start_74405f55529bcf68.html</a></td></tr>
+                    <tr><td>Yellow Stars</td><td><code>team4</code></td><td><a href="team4/start_e9f64c9678dce013.html" target="_blank">team4/start_e9f64c9678dce013.html</a></td></tr>
+                    <tr><td>Purple Ninjas</td><td><code>team5</code></td><td><a href="team5/start_d5b94bfe0920e594.html" target="_blank">team5/start_d5b94bfe0920e594.html</a></td></tr>
+                    </tbody>
+                </table>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_HASH = "38dd973d9d0d4962e3f6a1305d400361d6dd4e1ff5bd18e0840a8def9d627969";
+
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message.toUpperCase().trim());
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        document.getElementById('password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password-input').value;
+            const hash = await sha256(password);
+
+            if (hash === ADMIN_HASH) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+            } else {
+                document.getElementById('error-message').classList.remove('hidden');
+                document.getElementById('password-input').value = '';
+                setTimeout(() => {
+                    document.getElementById('error-message').classList.add('hidden');
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
