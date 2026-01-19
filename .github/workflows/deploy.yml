@@ -18,5 +18,8 @@ jobs:
       - name: Generate static site
         run: node generator/generate.js
 
+      - name: List generated files
+        run: ls -la ./dist
+
       - name: Deploy to Surge
-        run: npx surge ./dist ${{ vars.SURGE_DOMAIN }} --token ${{ secrets.SURGE_TOKEN }}
+        run: npx surge ./dist ${{ vars.SURGE_DOMAIN || 'treasure-hunt-enc5di.surge.sh' }} --token ${{ secrets.SURGE_TOKEN }}
